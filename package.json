@@ -1,0 +1,24 @@
+{
+  "name": "opus-video-director",
+  "version": "1.0.0",
+  "description": "Production suite and catalog of 475 code-based AI video archetypes from Claude Opus 5.5",
+  "main": "scripts/opus_videos.py",
+  "scripts": {
+    "stats": "python3 scripts/opus_videos.py stats",
+    "search": "python3 scripts/opus_videos.py search",
+    "list": "python3 scripts/opus_videos.py list",
+    "archetypes": "python3 scripts/opus_videos.py archetypes"
+  },
+  "keywords": [
+    "opus-5-5",
+    "ai-video",
+    "motion-graphics",
+    "hyperframes",
+    "remotion",
+    "canvas",
+    "threejs",
+    "glsl"
+  ],
+  "author": "anndreloopez012",
+  "license": "MIT"
+}

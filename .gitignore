@@ -6,3 +6,4 @@ frames/
 .DS_Store
 *.log
 .env
+graphify-out/

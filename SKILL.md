@@ -142,3 +142,15 @@ ffmpeg -y -framerate 60 -i frames/frame_%05d.png \
 - [Prompt Engineering & Structural Contracts](references/prompt-engineering.md)
 - [Deterministic Render Pipelines (HyperFrames, Remotion, Canvas, ThreeJS)](references/render-pipelines.md)
 - [Full 475-Video Database (`catalog.json`)](references/catalog.json)
+
+---
+
+## Specialized Subagent: `video-director-cinematographer`
+
+For autonomous, end-to-end directorial supervision, invoke or collaborate with the specialized subagent `video-director-cinematographer`:
+- **Role**: Director Cinematográfico & Diseñador Visual de Videos (The AI Filmmaker & Motion Designer).
+- **Core Workflow**:
+  1. **Briefing Refinement**: Organizes disorganized ideas into an exact beat-by-beat storyboard.
+  2. **Style Matching**: Uses `python3 scripts/opus_videos.py search "<tema>"` to pick the optimal archetype among the 475 Opus 5.5 styles.
+  3. **Missing Inputs Audit**: Stops before generating to ask the user what assets need to be uploaded (SVG logos, brand HEX, UI mockups, voiceover timing).
+  4. **7-Layer Master Prompt**: Writes production-ready cinematic prompts in technical English with camera lenses, physical lighting, and closed-form eases.

@@ -70,6 +70,23 @@ python3 scripts/opus_videos.py scaffold motion-showreel --target-dir ./my-reel -
 
 ---
 
+## 🎬 Agente Especializado: `video-director-cinematographer`
+
+El proyecto incluye un agente canónico multi-entorno (**Claude Code**, **Antigravity** y **Codex**) diseñado para actuar como un **Director Cinematográfico y Diseñador Visual Senior**.
+
+### ¿Qué hace este agente?
+1. **Acomoda la información desordenada**: Toma notas sueltas, briefs caóticos o ideas vagas y las estructura en un guion técnico segundo por segundo (0-3s Hook, 3-8s Demostración, 8-12s Hero Shot, 12-15s Outro).
+2. **Selecciona el estilo óptimo**: Conoce a fondo los 475 estilos de Opus 5.5 y consulta la CLI (`opus_videos.py`) para sugerir el arquetipo y video de referencia exacto para tu producto o tema.
+3. **Audita insumos faltantes antes de ejecutar**: Antes de redactar prompts o generar código, revisa la lista de insumos técnicos necesarios y te pregunta exactamente qué logos (SVG), paletas (HEX), capturas de pantalla o audios necesitas cargar para que el prompt funcione sin alucinaciones.
+4. **Redacta prompts de 7 capas**: Produce prompts cinematográficos con distancias focales reales, iluminación física, curvas de aceleración cubic-bezier y locuciones calibradas matemáticamente a 135 WPM (con regla de cero emojis).
+
+### ¿Cómo convocarlo?
+- **En Antigravity**: El subagente `video-director-cinematographer` está disponible directamente para ser invocado o consultado en cualquier sesión.
+- **En Claude Code**: `~/.claude/agents/video-director-cinematographer.md`
+- **En Codex**: `~/.codex/agents/video-director-cinematographer.toml`
+
+---
+
 ## Core Architectural Contract
 
 ### 1. Closed-Form Spring Dynamics (Seek-Safe)

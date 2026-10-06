@@ -1,0 +1,10 @@
+{
+  "name": "template-canvas-motion",
+  "version": "1.0.0",
+  "scripts": {
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

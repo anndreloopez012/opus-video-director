@@ -349,6 +349,7 @@
       position: relative;
       background: #090c14;
       overflow: hidden;
+      cursor: pointer;
     }
     .thumb-img {
       width: 100%;
@@ -358,6 +359,35 @@
     }
     .video-card:hover .thumb-img {
       transform: scale(1.05);
+    }
+    .play-overlay-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 48px;
+      height: 48px;
+      background: rgba(13, 17, 26, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(232, 184, 75, 0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 18px;
+      padding-left: 3px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2;
+    }
+    .video-card:hover .play-overlay-btn {
+      transform: translate(-50%, -50%) scale(1.1);
+      background: var(--accent-gold);
+      color: #000000;
+      border-color: #ffffff;
+      box-shadow: 0 0 22px rgba(232, 184, 75, 0.6);
     }
     .duration-badge {
       position: absolute;
@@ -642,14 +672,80 @@
       background: #000000;
       border: 1px solid var(--border-subtle);
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      max-height: 380px;
+      position: relative;
     }
-    .modal-preview-box img {
+    .modal-video-player {
       width: 100%;
-      height: 100%;
-      max-height: 380px;
-      object-fit: contain;
+      max-height: 440px;
+      background: #000000;
+      outline: none;
+      display: block;
+    }
+    .modal-video-toggle-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 16px;
+      background: rgba(18, 24, 38, 0.95);
+      border-top: 1px solid var(--border-subtle);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .video-stream-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-gold);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .stream-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0% { opacity: 0.6; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+      100% { opacity: 0.6; transform: scale(0.9); }
+    }
+    .video-switch-group {
+      display: flex;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 4px;
+    }
+    .btn-toggle-stream {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-toggle-stream:hover {
+      color: #ffffff;
+    }
+    .btn-toggle-stream.active {
+      background: var(--accent-gold);
+      color: #000000;
+      box-shadow: 0 2px 8px rgba(232, 184, 75, 0.3);
     }
 
     /* Modal Inputs Detail Section */
@@ -903,9 +999,19 @@
         <button class="modal-close" id="modalCloseBtn">&times;</button>
       </div>
       <div class="modal-content">
-        <!-- Preview Box -->
+        <!-- Preview & Video Player Box -->
         <div class="modal-preview-box" id="modalPreviewBox">
-          <img id="modalImg" src="" alt="Vista Previa">
+          <video id="modalVideo" class="modal-video-player" controls autoplay playsinline loop preload="auto" poster=""></video>
+          <div class="modal-video-toggle-bar">
+            <div class="video-stream-badge">
+              <span class="stream-indicator"></span>
+              <span id="streamStatusText">Reproductor Integrado · En tu Dominio</span>
+            </div>
+            <div class="video-switch-group">
+              <button type="button" class="btn-toggle-stream active" id="btnStreamRemake">🎬 Remake Opus 5.5</button>
+              <button type="button" class="btn-toggle-stream" id="btnStreamOriginal">📹 Referencia Original</button>
+            </div>
+          </div>
         </div>
 
         <!-- Insumos Requeridos Section -->
@@ -940,9 +1046,9 @@
         </div>
 
         <!-- Action Links -->
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
-          <a id="modalPostLink" href="#" target="_blank" class="btn-action">Ver Publicación en X</a>
-          <a id="modalRemakeLink" href="#" target="_blank" class="btn-action primary">Ver Video Remake</a>
+        <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+          <a id="modalPostLink" href="#" target="_blank" class="btn-action" style="display: none;">🐦 Ver Discusión en X</a>
+          <button type="button" class="btn-action" id="modalCloseBtnBottom">Cerrar Reproductor</button>
         </div>
       </div>
     </div>
@@ -1006,18 +1112,22 @@
       // Modal DOM
       const detailModal = document.getElementById('detailModal');
       const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const modalCloseBtnBottom = document.getElementById('modalCloseBtnBottom');
       const modalTitle = document.getElementById('modalTitle');
       const modalSubtitle = document.getElementById('modalSubtitle');
-      const modalImg = document.getElementById('modalImg');
+      const modalVideo = document.getElementById('modalVideo');
+      const streamStatusText = document.getElementById('streamStatusText');
+      const btnStreamRemake = document.getElementById('btnStreamRemake');
+      const btnStreamOriginal = document.getElementById('btnStreamOriginal');
       const modalInputsList = document.getElementById('modalInputsList');
       const modalCliCmd = document.getElementById('modalCliCmd');
       const modalCopyCmdBtn = document.getElementById('modalCopyCmdBtn');
       const modalPromptText = document.getElementById('modalPromptText');
       const modalCopyPromptBtn = document.getElementById('modalCopyPromptBtn');
       const modalPostLink = document.getElementById('modalPostLink');
-      const modalRemakeLink = document.getElementById('modalRemakeLink');
 
       let currentActiveVideo = null;
+      let activeStreamType = 'remake';
 
       // Render Archetype Chips in Spanish
       function initArchetypes() {
@@ -1112,6 +1222,7 @@
             <div class="thumb-wrap">
               <span class="aspect-badge">${v.aspect}</span>
               <img class="thumb-img" src="${poster}" alt="${v.slug}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'180\\' fill=\\'%23111\\'><rect width=\\'100%\\' height=\\'100%\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23666\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\'>Vista Previa</text></svg>'">
+              <div class="play-overlay-btn" title="Reproducir Clip en Vivo">▶</div>
               <span class="duration-badge">${v.duration}s</span>
             </div>
             <div class="card-body">
@@ -1144,11 +1255,14 @@
                   $ ${cliCmd}
                 </div>
                 <div class="card-actions">
-                  <button class="btn-action primary btn-copy-prompt" data-slug="${v.slug}">
+                  <button class="btn-action primary btn-play-clip" data-id="${v.id}">
+                    ▶ Reproducir Clip
+                  </button>
+                  <button class="btn-action btn-copy-prompt" data-slug="${v.slug}">
                     Copiar Prompt
                   </button>
                   <button class="btn-action btn-inspect" data-id="${v.id}">
-                    Inspeccionar & Insumos
+                    Insumos
                   </button>
                 </div>
               </div>
@@ -1166,7 +1280,13 @@
             copyToClipboard(v.prompt, `¡Prompt #${v.id} (${v.slug}) copiado! 📋`);
           });
 
-          card.querySelector('.btn-inspect').addEventListener('click', () => {
+          card.querySelector('.btn-play-clip').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(v);
+          });
+
+          card.querySelector('.btn-inspect').addEventListener('click', (e) => {
+            e.stopPropagation();
             openModal(v);
           });
 
@@ -1188,15 +1308,47 @@
         resultsCount.innerText = `Mostrando ${Math.min(page * pageSize, filteredVideos.length)} de ${filteredVideos.length} estilos`;
       }
 
-      // Modal Handler
+      // Modal Handler with Integrated Video Player
       function openModal(video) {
         currentActiveVideo = video;
         const archLabel = video.archetypeTitleEs || video.archetype;
         modalTitle.innerText = `${video.slug} (#${video.id})`;
         modalSubtitle.innerText = `${archLabel.toUpperCase()} · ${video.duration}s · ${video.aspect} · Por @${video.author}`;
         
-        const previewSrc = video.remakePosterUrl || video.posterUrl;
-        modalImg.src = previewSrc;
+        const previewSrc = video.remakePosterUrl || video.posterUrl || '';
+        modalVideo.poster = previewSrc;
+
+        // Reset stream toggle states
+        activeStreamType = 'remake';
+        btnStreamRemake.classList.add('active');
+        btnStreamOriginal.classList.remove('active');
+
+        // Toggle buttons availability
+        if (video.originalVideoUrl && video.remakeVideoUrl) {
+          btnStreamOriginal.style.display = 'inline-flex';
+          btnStreamRemake.style.display = 'inline-flex';
+        } else if (video.originalVideoUrl && !video.remakeVideoUrl) {
+          btnStreamOriginal.style.display = 'inline-flex';
+          btnStreamOriginal.classList.add('active');
+          btnStreamRemake.style.display = 'none';
+          activeStreamType = 'original';
+        } else {
+          btnStreamOriginal.style.display = 'none';
+          btnStreamRemake.style.display = 'inline-flex';
+        }
+
+        const videoSrc = (activeStreamType === 'remake' ? video.remakeVideoUrl : video.originalVideoUrl) || video.remakeVideoUrl || video.originalVideoUrl || '';
+        if (videoSrc) {
+          modalVideo.src = videoSrc;
+          modalVideo.load();
+          modalVideo.play().catch(err => {
+            console.log('Reproducción en espera de interacción:', err);
+          });
+          streamStatusText.innerText = 'Reproduciendo Clip · En tu Dominio';
+        } else {
+          modalVideo.removeAttribute('src');
+          streamStatusText.innerText = 'Póster de Vista Previa';
+        }
 
         // Render detailed required inputs in modal
         modalInputsList.innerHTML = '';
@@ -1210,14 +1362,23 @@
         modalCliCmd.innerText = `$ ${scaffoldCmd}`;
         modalPromptText.innerText = video.prompt;
 
-        modalPostLink.href = video.postUrl || '#';
-        modalRemakeLink.href = video.remakeVideoUrl || video.originalVideoUrl || '#';
+        if (video.postUrl && video.postUrl.startsWith('http')) {
+          modalPostLink.style.display = 'inline-flex';
+          modalPostLink.href = video.postUrl;
+        } else {
+          modalPostLink.style.display = 'none';
+        }
 
         detailModal.classList.add('open');
       }
 
       function closeModal() {
         detailModal.classList.remove('open');
+        if (modalVideo) {
+          modalVideo.pause();
+          modalVideo.removeAttribute('src');
+          modalVideo.load();
+        }
         currentActiveVideo = null;
       }
 
@@ -1238,6 +1399,37 @@
           copyToClipboard(currentActiveVideo.prompt, '¡Prompt completo copiado al portapapeles! 🎬 Listo para pegar.');
         }
       });
+
+      // Stream Toggle Listeners (Remake vs Original)
+      btnStreamRemake.addEventListener('click', () => {
+        if (!currentActiveVideo || activeStreamType === 'remake') return;
+        activeStreamType = 'remake';
+        btnStreamRemake.classList.add('active');
+        btnStreamOriginal.classList.remove('active');
+        if (currentActiveVideo.remakeVideoUrl) {
+          modalVideo.src = currentActiveVideo.remakeVideoUrl;
+          modalVideo.load();
+          modalVideo.play().catch(() => {});
+          streamStatusText.innerText = 'Reproduciendo Remake Opus 5.5';
+        }
+      });
+
+      btnStreamOriginal.addEventListener('click', () => {
+        if (!currentActiveVideo || activeStreamType === 'original') return;
+        activeStreamType = 'original';
+        btnStreamOriginal.classList.add('active');
+        btnStreamRemake.classList.remove('active');
+        if (currentActiveVideo.originalVideoUrl) {
+          modalVideo.src = currentActiveVideo.originalVideoUrl;
+          modalVideo.load();
+          modalVideo.play().catch(() => {});
+          streamStatusText.innerText = 'Reproduciendo Referencia Original';
+        }
+      });
+
+      if (modalCloseBtnBottom) {
+        modalCloseBtnBottom.addEventListener('click', closeModal);
+      }
 
       // Clipboard helper with toast feedback
       function copyToClipboard(text, message) {
